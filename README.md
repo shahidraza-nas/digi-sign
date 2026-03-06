@@ -1,36 +1,88 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DigiSign — PDF Digital Signature
 
-## Getting Started
+A browser-based PDF signing application built with **Next.js 16** (App Router). Users upload a PDF, drag-and-drop signature and date fields onto the document, and sign it digitally using a PKCS#7 certificate.
 
-First, run the development server:
+## Features
+
+- **Drag-and-drop field placement** — position signature and date fields visually on the PDF
+- **Digital signing** — PKCS#7 signatures via `@signpdf/signpdf` with P12 certificates
+- **Multi-page support** — navigate between pages and place fields on any page
+- **Coordinate conversion** — pixel-accurate browser-to-PDF coordinate mapping
+- **Server-side validation** — magic-byte PDF verification, field coordinate validation
+- **Self-hosted PDF.js worker** — no external CDN dependency
+- **Accessible** — ARIA labels, keyboard skip-link, screen-reader support
+
+## Quick Start
 
 ```bash
+# Install dependencies
+npm install
+
+# Generate a self-signed certificate (development only)
+node scripts/generate-cert.js
+
+# Copy the env template and configure
+cp .env.example .env.local
+
+# Start the dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CERT_PATH` | `certs/certificate.p12` | Path to PKCS#12 certificate |
+| `CERT_PASSPHRASE` | *(empty)* | P12 certificate passphrase |
+| `SIGNER_NAME` | `DigiSign User` | Name displayed on signed PDFs |
+| `SIGNER_EMAIL` | `digisign@example.com` | Contact info in digital signature |
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+app/
+  api/sign-pdf/route.js    — POST endpoint: validate → annotate → sign → respond
+  components/
+    PdfSigner.js            — Main orchestrator (wizard steps, layout)
+    PdfViewer.js            — react-pdf Document/Page wrapper
+    PlacedField.js          — Draggable + resizable field overlay
+    FieldsSidebar.js        — Sidebar with draggable field chips
+    Stepper.js              — Step progress indicator
+    ErrorBoundary.js        — React error boundary
+  constants/fields.js       — Shared field definitions, icons, sizing constants
+  hooks/
+    useFileUpload.js        — File selection, ArrayBuffer loading, blob URL lifecycle
+    usePlacedFields.js      — Field CRUD, drop positioning
+    useSigning.js           — API call, download, status management
+  utils/
+    pdfCoords.js            — Pixel → PDF coordinate conversion
+    validation.js           — Server-side input validation
+scripts/
+  generate-cert.js          — Generate a self-signed P12 certificate
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Signing Pipeline
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Upload** — User selects a PDF, read as ArrayBuffer
+2. **Place fields** — Drag signature/date chips onto the rendered PDF
+3. **Sign** — Client sends PDF + field coordinates to `/api/sign-pdf`
+   - Server validates inputs (magic bytes, field bounds, JSON schema)
+   - `pdf-lib` draws visible text annotations (signer name, date)
+   - `@signpdf/placeholder-plain` injects a PKCS#7 placeholder
+   - `@signpdf/signpdf` signs with the P12 certificate
+4. **Download** — Signed PDF returned as a binary attachment
 
-## Deploy on Vercel
+## Tech Stack
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Next.js 16** (App Router, React 19)
+- **react-pdf** — PDF rendering
+- **react-draggable** + **re-resizable** — DnD field placement
+- **pdf-lib** — PDF annotation
+- **@signpdf/*** — PKCS#7 digital signatures
+- **node-forge** — Certificate generation (dev only)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+
+Private

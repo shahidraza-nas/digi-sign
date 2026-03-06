@@ -1,27 +1,16 @@
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-}
-
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --background: #f0f2f5;
+  --foreground: #1e293b;
+  --primary: #2e7d32;
+  --primary-light: #4caf50;
+  --accent: #e91e63;
+  --accent-hover: #c2185b;
+  --border: #dce1e8;
+  --surface: #ffffff;
+  --sidebar-bg: #fafbfc;
+  --error: #d32f2f;
+  --text-muted: #78909c;
+  --nav-bg: #37474f;
 }
 
 * {
@@ -30,13 +19,530 @@ body {
   margin: 0;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+/* Accessible hidden — available to screen readers but visually hidden */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
+/* Skip-to-main link for keyboard users */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--nav-bg);
+  color: #fff;
+  padding: 8px 16px;
+  z-index: 1000;
+  font-size: 14px;
+  transition: top 0.2s;
+}
+.skip-link:focus {
+  top: 0;
+}
+
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 14px;
+}
+
+/* ================================================
+   APP LAYOUT
+   ================================================ */
+
+.app-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- Main Card ---- */
+
+.main-card {
+  margin: 0 24px 24px;
+  background: var(--surface);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 24px;
+  flex: 1;
+}
+
+/* ================================================
+   UPLOAD STEP
+   ================================================ */
+
+.upload-step {
+  display: flex;
+  justify-content: center;
+  margin-top: 48px;
+}
+
+.upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 80px;
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--sidebar-bg);
+}
+
+.upload-label:hover {
+  border-color: #1976d2;
+  background: #f5f8ff;
+}
+
+.upload-text {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.upload-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ================================================
+   SIGNATURE STEP LAYOUT
+   ================================================ */
+
+.signature-step {
+  margin-top: 24px;
+}
+
+.signature-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.pdf-area {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pdf-wrapper {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: visible;
+  position: relative;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* Ensure react-pdf layers don't cover placed fields */
+.pdf-wrapper .react-pdf__Page__textContent,
+.pdf-wrapper .react-pdf__Page__annotations {
+  z-index: 1 !important;
+}
+
+.pdf-wrapper .react-pdf__Page canvas {
+  z-index: 0;
+}
+
+/* Dashed bottom edge to indicate the page boundary */
+.pdf-wrapper::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--border) 0,
+    var(--border) 8px,
+    transparent 8px,
+    transparent 14px
+  );
+}
+
+/* react-pdf pages */
+.pdf-wrapper .react-pdf__Page {
+  display: block;
+}
+
+.pdf-wrapper .react-pdf__Page canvas {
+  display: block;
+}
+
+/* ---- Page Navigation ---- */
+
+.page-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.page-nav button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  color: var(--text-muted);
+}
+
+.page-nav button:hover:not(:disabled) {
+  border-color: #1976d2;
+  color: #1976d2;
+}
+
+.page-nav button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.page-nav span {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+/* ================================================
+   SIDEBAR
+   ================================================ */
+
+.sidebar-area {
+  width: 240px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.fields-sidebar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.fields-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.fields-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.fields-info {
+  cursor: help;
+  display: flex;
+  align-items: center;
+}
+
+.fields-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fields-empty {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 12px 0;
+}
+
+.field-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  cursor: grab;
+  transition: all 0.15s;
+  user-select: none;
+}
+
+.field-chip:hover {
+  border-color: #90caf9;
+  background: #f5f8ff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.field-chip:active {
+  cursor: grabbing;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transform: scale(1.02);
+}
+
+.field-grip {
+  color: #b0bec5;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.field-icon {
+  color: #546e7a;
+  display: flex;
+  align-items: center;
+}
+
+.field-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--foreground);
+  flex: 1;
+}
+
+/* Placed state — field already on the PDF */
+.field-chip-placed {
+  opacity: 0.6;
+  cursor: default;
+  border-color: #c8e6c9;
+  background: #f1f8e9;
+}
+
+.field-chip-placed:hover {
+  border-color: #c8e6c9;
+  background: #f1f8e9;
+  box-shadow: none;
+}
+
+.field-chip-placed:active {
+  cursor: default;
+  box-shadow: none;
+  transform: none;
+}
+
+.field-check {
+  display: flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.field-placed-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: #4caf50;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ---- Buttons ---- */
+
+.btn-save {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 24px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-save:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.btn-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-skip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--surface);
+  color: var(--foreground);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-skip:hover {
+  border-color: #90a4ae;
+  background: #fafafa;
+}
+
+/* ================================================
+   EMAIL STEP
+   ================================================ */
+
+.email-step {
+  margin-top: 48px;
+}
+
+.email-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px;
+  text-align: center;
+}
+
+.email-placeholder h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.email-placeholder p {
+  font-size: 14px;
+  color: var(--text-muted);
+  max-width: 400px;
+}
+
+.email-placeholder .btn-save {
+  width: auto;
+  padding: 10px 28px;
+  margin-top: 8px;
+}
+
+/* ================================================
+   STATUS BAR
+   ================================================ */
+
+.status-bar {
+  text-align: center;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-top: 16px;
+}
+
+.status-info {
+  background: #e8f5e9;
+  color: var(--primary);
+}
+
+.status-error {
+  background: #ffebee;
+  color: var(--error);
+}
+
+/* ================================================
+   FOOTER
+   ================================================ */
+
+.app-footer {
+  text-align: center;
+  padding: 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+
+/* ================================================
+   SPINNER
+   ================================================ */
+
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
+}
+
+/* ================================================
+   RESPONSIVE BREAKPOINTS
+   ================================================ */
+
+@media (max-width: 900px) {
+  .signature-layout {
+    flex-direction: column;
+  }
+
+  .sidebar-area {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .sidebar-area .fields-sidebar {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .sidebar-area .btn-save,
+  .sidebar-area .btn-skip {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 140px;
+  }
+
+  .pdf-wrapper {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .main-card {
+    margin: 0 8px 16px;
+    padding: 16px;
+  }
+
+  .upload-label {
+    padding: 32px 24px;
+  }
+
 }
