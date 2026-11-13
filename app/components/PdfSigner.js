@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
 import FieldsSidebar from "./FieldsSidebar";
@@ -249,7 +250,7 @@ export default function PdfSigner() {
 
       {/* Footer */}
       <footer className="app-footer">
-        DigiSign &copy; {new Date().getFullYear()} v1.0.0
+        DigiSign &copy; {new Date().getFullYear()} v1.0.0 · <Link href="/dropbox-sign">Try the Dropbox Sign demo →</Link>
       </footer>
     </div>
   );

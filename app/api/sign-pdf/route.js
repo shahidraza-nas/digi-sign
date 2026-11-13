@@ -20,6 +20,12 @@ const SIGNER_EMAIL = process.env.SIGNER_EMAIL || "digisign@example.com";
 let cachedP12Buffer = null;
 
 async function getSigner() {
+  // On serverless hosts (e.g. Vercel) the cert file isn't deployed, so allow
+  // supplying the P12 as a base64 env var instead.
+  if (!cachedP12Buffer && process.env.CERT_P12_BASE64) {
+    cachedP12Buffer = Buffer.from(process.env.CERT_P12_BASE64, "base64");
+  }
+
   if (!cachedP12Buffer) {
     const certAbsPath = path.isAbsolute(CERT_PATH)
       ? CERT_PATH
